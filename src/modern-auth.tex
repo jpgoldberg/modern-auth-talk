@@ -21,7 +21,7 @@
 
 \usepackage{xltxtra}
 \usepackage[backend=biber,style=alphabetic,
-  doi=true, url=true, isbn=false]{biblatex}
+doi=true, url=true, isbn=false]{biblatex}
 
 % When Jeffrey Goldberg builds this, he can use his bibliography database
 % But he should include in the repository a .bib file that contains what
@@ -49,14 +49,14 @@
 \molochset{titleformat = smallcaps,
   titleformat plain = regular,
   subsectionpage = progressbar,
-  block = fill}
+block = fill}
 \setbeamercolor{palette primary}{bg=BitsBlue2}
 \usepackage{appendixnumberbeamer}
 
 \setbeamertemplate{theorems}[numbered]
 
-\usepackage{../Common/stNotes}
-\setbeamertemplate{frame footer}{\insertshortauthor~(\insertshortinstitute)}
+\usepackage{Common/stNotes}
+\setbeamertemplate{frame footer}{\insertshortauthor}
 
 \usepackage{minted}
 \usemintedstyle{xcode}
@@ -72,24 +72,52 @@
 {Jeffrey Goldberg\texorpdfstring{\\ \texttt{jeffrey@goldmark.org}}{}}
 \title{Building Modern Authentication in the Before Time (2015)}
 \subtitle{Putting theory into practices is hard}
-\date{September 1, 2022\\
-  \footnotesize Last revised: \today }
+\date{September 1, 2026\\
+\footnotesize Last revised: \today }
+% \institute{Not yet institutionalized}
+
 
 \hypersetup{colorlinks=true, allcolors=black, urlcolor=magenta}
-\providecommand*{\reporoot}{https://github.com/jpgoldberg/modern-auth-talk/}
-\providecommand*{\sourceroot}{\reporoot/-/tree/main/2022-04-08}
+\providecommand*{\reporoot}{https://github.com/jpgoldberg/modern-auth-talk}
+\providecommand*{\sourceroot}{\reporoot/blob/main/src}
 \begin{document}
 \maketitle
-\nocite{Aumasson2017:Serious}
 
-\begin{frame}{From factoring problem to crypgoraphy}
+\begin{frame}{Who am I?}
   \begin{itemize}
-    \item Our goal is to turn the (believed) NP problem of factoring into useful cryptography.
-    \item Despite all of the math we've gone through over the past months, there is still more to learn.
-    \item We need to understand properties of modular arithmetic when the modulus is a composite number.
+    \item Jeffrey Goldberg \url{https://jeffrey.goldmark.org}
+    \item Of the generation of (dropout) academics who ended up as sysadmins.
+      \note[item]{Has never taken a programming course, but have taught some.}
+    \item Tried (and failed) to solve the password problem in the 1990s.
+    \item Got into information security and cryptography
+    \item 2010–2023: Worked for 1Password, a password manager.
+    \item Not authorized to speak on behalf of 1Password.
+      \note[item]{I am much more than that, but trying to keep things relevant and to a single slide.}
   \end{itemize}
-  
+
 \end{frame}
+
+\begin{frame}{1Password in 2015}
+  \begin{itemize}
+    \item A successful password manager from home users.
+    \item Very strong reputation for privacy as well as security and usability.
+      \note[item]{E.g., among the first (2012) to encrypt URLs and item titles and to use authenticated encryption (Encrypt-then-MAC).}
+    \item Did not host customer data in any form.
+    \item Hooks for users to sync their data using Dropbox and other third party solutions.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Limations}
+  \begin{itemize}
+    \item Maintaining sync mechanisms with different third party services getting harder.
+    \item Sync systems that worked didn't have all the security requirements we wanted.
+    \item Users could share subsets of their data with other members of families or teams.
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
 
 \begin{frame}{Overview}
   \begin{enumerate}
@@ -98,7 +126,7 @@
     \item The first part of this presentation is aimed to help you understand what Euler's totient function is.
     \item The second part of this presentation is aimed at showing how this is used in the RSA algorithm.
   \end{enumerate}
-  
+
 \end{frame}
 
 \section{Composite moduli}
@@ -109,36 +137,36 @@
     \colorlet{Ucolor}{white}
     \colorlet{Zcolor}{white}
     \begin{tabular}{r|UUZUZZUUZZUZUU}
-    $\times$
-       &  1 &  2 &  3 &  4 &  5 &  6 &  7 &  8 &  9 & 10 & 11 & 12 & 13 & 14  \\
-    \midrule
-    \rcu
+      $\times$
+      &  1 &  2 &  3 &  4 &  5 &  6 &  7 &  8 &  9 & 10 & 11 & 12 & 13 & 14  \\
+      \midrule
+      \rcu
       1 &  1 &  2 &  3 &  4 &  5 &  6 &  7 &  8 &  9 & 10 & 11 & 12 & 13 & 14 \\
-     \rcu
+      \rcu
       2 &  2 &  4 &  6 &  8 & 10 & 12 & 14 &  1 &  3 &  5 &  7 &  9 & 11 & 13 \\
-     \rcz
+      \rcz
       3 &  3 &  6 &  9 & 12 &  0 &  3 &  6 &  9 & 12 &  0 &  3 &  6 &  9 & 12 \\
-     \rcu
+      \rcu
       4 &  4 &  8 & 12 &  1 &  5 &  9 & 13 &  2 &  6 & 10 & 14 &  3 &  7 & 11 \\
-     \rcz
+      \rcz
       5 &  5 & 10 &  0 &  5 & 10 &  0 &  5 & 10 &  0 &  5 & 10 &  0 &  5 & 10 \\
-    \rcz
+      \rcz
       6 &  6 & 12 &  3 &  9 &  0 &  6 & 12 &  3 &  9 &  0 &  6 & 12 &  3 &  9 \\
-    \rcu
-     7 &  7 & 14 &  6 & 13 &  5 & 12 &  4 & 11 &  3 & 10 &  2 &  9 &  1 &  8 \\
-    \rcu
+      \rcu
+      7 &  7 & 14 &  6 & 13 &  5 & 12 &  4 & 11 &  3 & 10 &  2 &  9 &  1 &  8 \\
+      \rcu
       8 &  8 &  1 &  9 &  2 & 10 &  3 & 11 &  4 & 12 &  5 & 13 &  6 & 14 &  7 \\
-    \rcz
+      \rcz
       9 &  9 &  3 & 12 &  6 &  0 &  9 &  3 & 12 &  6 &  0 &  9 &  3 & 12 &  6 \\
-    \rcz
+      \rcz
       10 & 10 &  5 &  0 & 10 &  5 &  0 & 10 &  5 &  0 & 10 &  5 &  0 & 10 &  5 \\
-    \rcu
+      \rcu
       11 & 11 &  7 &  3 & 14 & 10 &  6 &  2 & 13 &  9 &  5 &  1 & 12 &  8 &  4 \\
-    \rcz
+      \rcz
       12 & 12 &  9 &  6 &  3 &  0 & 12 &  9 &  6 &  3 &  0 & 12 &  9 &  6 &  3 \\
-    \rcu
+      \rcu
       13 & 13 & 11 &  9 &  7 &  5 &  3 &  1 & 14 & 12 & 10 &  8 &  6 &  4 &  2 \\
-    \rcu
+      \rcu
       14 & 14 & 13 & 12 & 11 & 10 &  9 &  8 &  7 &  6 &  5 &  4 &  3 &  2 &  1
     \end{tabular}
     \caption{Multiplication modulo 15}
@@ -152,37 +180,37 @@
     % \colorlet{Ucolor}{white}
     \colorlet{Zcolor}{white}
     \begin{tabular}{r|*{14}{r}}
-     % color columns spec: {r|UUZUZZUUZZUZUU}
-    $\times$
-       &  1 &  2 &  3 &  4 &  5 &  6 &  7 &  8 &  9 & 10 & 11 & 12 & 13 & 14  \\
-    \midrule
-    \rcu
+      % color columns spec: {r|UUZUZZUUZZUZUU}
+      $\times$
+      &  1 &  2 &  3 &  4 &  5 &  6 &  7 &  8 &  9 & 10 & 11 & 12 & 13 & 14  \\
+      \midrule
+      \rcu
       1 &  1 &  2 &  3 &  4 &  5 &  6 &  7 &  8 &  9 & 10 & 11 & 12 & 13 & 14 \\
-     \rcu
+      \rcu
       2 &  2 &  4 &  6 &  8 & 10 & 12 & 14 &  1 &  3 &  5 &  7 &  9 & 11 & 13 \\
-     \rcz
+      \rcz
       3 &  3 &  6 &  9 & 12 &  0 &  3 &  6 &  9 & 12 &  0 &  3 &  6 &  9 & 12 \\
-     \rcu
+      \rcu
       4 &  4 &  8 & 12 &  1 &  5 &  9 & 13 &  2 &  6 & 10 & 14 &  3 &  7 & 11 \\
-     \rcz
+      \rcz
       5 &  5 & 10 &  0 &  5 & 10 &  0 &  5 & 10 &  0 &  5 & 10 &  0 &  5 & 10 \\
-    \rcz
+      \rcz
       6 &  6 & 12 &  3 &  9 &  0 &  6 & 12 &  3 &  9 &  0 &  6 & 12 &  3 &  9 \\
-    \rcu
-     7 &  7 & 14 &  6 & 13 &  5 & 12 &  4 & 11 &  3 & 10 &  2 &  9 &  1 &  8 \\
-    \rcu
+      \rcu
+      7 &  7 & 14 &  6 & 13 &  5 & 12 &  4 & 11 &  3 & 10 &  2 &  9 &  1 &  8 \\
+      \rcu
       8 &  8 &  1 &  9 &  2 & 10 &  3 & 11 &  4 & 12 &  5 & 13 &  6 & 14 &  7 \\
-    \rcz
+      \rcz
       9 &  9 &  3 & 12 &  6 &  0 &  9 &  3 & 12 &  6 &  0 &  9 &  3 & 12 &  6 \\
-    \rcz
+      \rcz
       10 & 10 &  5 &  0 & 10 &  5 &  0 & 10 &  5 &  0 & 10 &  5 &  0 & 10 &  5 \\
-    \rcu
+      \rcu
       11 & 11 &  7 &  3 & 14 & 10 &  6 &  2 & 13 &  9 &  5 &  1 & 12 &  8 &  4 \\
-    \rcz
+      \rcz
       12 & 12 &  9 &  6 &  3 &  0 & 12 &  9 &  6 &  3 &  0 & 12 &  9 &  6 &  3 \\
-    \rcu
+      \rcu
       13 & 13 & 11 &  9 &  7 &  5 &  3 &  1 & 14 & 12 & 10 &  8 &  6 &  4 &  2 \\
-    \rcu
+      \rcu
       14 & 14 & 13 & 12 & 11 & 10 &  9 &  8 &  7 &  6 &  5 &  4 &  3 &  2 &  1
     \end{tabular}
     \caption{Multiplication modulo 15: Highlighting some rows}
@@ -195,37 +223,37 @@
     \colorlet{Ucolor}{white}
     % \colorlet{Zcolor}{white}
     \begin{tabular}{r|*{14}{r}}
-    % color columns spec: {r|UUZUZZUUZZUZUU}
-    $\times$
-       &  1 &  2 &  3 &  4 &  5 &  6 &  7 &  8 &  9 & 10 & 11 & 12 & 13 & 14  \\
-    \midrule
-    \rcu
+      % color columns spec: {r|UUZUZZUUZZUZUU}
+      $\times$
+      &  1 &  2 &  3 &  4 &  5 &  6 &  7 &  8 &  9 & 10 & 11 & 12 & 13 & 14  \\
+      \midrule
+      \rcu
       1 &  1 &  2 &  3 &  4 &  5 &  6 &  7 &  8 &  9 & 10 & 11 & 12 & 13 & 14 \\
-     \rcu
+      \rcu
       2 &  2 &  4 &  6 &  8 & 10 & 12 & 14 &  1 &  3 &  5 &  7 &  9 & 11 & 13 \\
-     \rcz
+      \rcz
       3 &  3 &  6 &  9 & 12 &  0 &  3 &  6 &  9 & 12 &  0 &  3 &  6 &  9 & 12 \\
-     \rcu
+      \rcu
       4 &  4 &  8 & 12 &  1 &  5 &  9 & 13 &  2 &  6 & 10 & 14 &  3 &  7 & 11 \\
-     \rcz
+      \rcz
       5 &  5 & 10 &  0 &  5 & 10 &  0 &  5 & 10 &  0 &  5 & 10 &  0 &  5 & 10 \\
-    \rcz
+      \rcz
       6 &  6 & 12 &  3 &  9 &  0 &  6 & 12 &  3 &  9 &  0 &  6 & 12 &  3 &  9 \\
-    \rcu
-     7 &  7 & 14 &  6 & 13 &  5 & 12 &  4 & 11 &  3 & 10 &  2 &  9 &  1 &  8 \\
-    \rcu
+      \rcu
+      7 &  7 & 14 &  6 & 13 &  5 & 12 &  4 & 11 &  3 & 10 &  2 &  9 &  1 &  8 \\
+      \rcu
       8 &  8 &  1 &  9 &  2 & 10 &  3 & 11 &  4 & 12 &  5 & 13 &  6 & 14 &  7 \\
-    \rcz
+      \rcz
       9 &  9 &  3 & 12 &  6 &  0 &  9 &  3 & 12 &  6 &  0 &  9 &  3 & 12 &  6 \\
-    \rcz
+      \rcz
       10 & 10 &  5 &  0 & 10 &  5 &  0 & 10 &  5 &  0 & 10 &  5 &  0 & 10 &  5 \\
-    \rcu
+      \rcu
       11 & 11 &  7 &  3 & 14 & 10 &  6 &  2 & 13 &  9 &  5 &  1 & 12 &  8 &  4 \\
-    \rcz
+      \rcz
       12 & 12 &  9 &  6 &  3 &  0 & 12 &  9 &  6 &  3 &  0 & 12 &  9 &  6 &  3 \\
-    \rcu
+      \rcu
       13 & 13 & 11 &  9 &  7 &  5 &  3 &  1 & 14 & 12 & 10 &  8 &  6 &  4 &  2 \\
-    \rcu
+      \rcu
       14 & 14 & 13 & 12 & 11 & 10 &  9 &  8 &  7 &  6 &  5 &  4 &  3 &  2 &  1
     \end{tabular}
     \caption{Multiplication modulo 15: Highlighting other rows}
@@ -235,27 +263,27 @@
 \begin{frame}{Rows with 1}
   \begin{itemize}
     \item All of the \colorbox{Ucolor}{green} rows contain 1.
-    \item None of the \colorbox{Zcolor}{yellow} rows contain 1. 
+    \item None of the \colorbox{Zcolor}{yellow} rows contain 1.
   \end{itemize}
   \begin{example}
     \begin{itemize}
       \item $\colorbox{Ucolor}{2} \times 8 \equiv 1$
-      \item There is no $x$ such that $\colorbox{Zcolor}{3} \times x \equiv 1$. 
+      \item There is no $x$ such that $\colorbox{Zcolor}{3} \times x \equiv 1$.
     \end{itemize}
-  \end{example} 
+  \end{example}
 \end{frame}
 
 \begin{frame}{Rows with 0}
   \begin{itemize}
     \item All of the \colorbox{Zcolor}{yellow} rows contain 0.
-    \item None of the \colorbox{Ucolor}{green} rows contain 0. 
+    \item None of the \colorbox{Ucolor}{green} rows contain 0.
   \end{itemize}
   \begin{example}
     \begin{itemize}
-    \item $\colorbox{Zcolor}{10} \times 3 \equiv 0$
-    \item There is no $x > 0 $ such that $\colorbox{Ucolor}{7} \times x \equiv 0$.
-    \end{itemize} 
-  \end{example} 
+      \item $\colorbox{Zcolor}{10} \times 3 \equiv 0$
+      \item There is no $x > 0 $ such that $\colorbox{Ucolor}{7} \times x \equiv 0$.
+    \end{itemize}
+  \end{example}
 \end{frame}
 
 \begin{frame}{Rows with all of the non-zero elements}
@@ -266,10 +294,10 @@
   \begin{example}
     \begin{itemize}
       \item The \colorbox{Ucolor}{row for 4} contains
-      all of the numbers 1 through 14.
+        all of the numbers 1 through 14.
       \item The \colorbox{Zcolor}{row for 6} contains the numbers 3, 6, 9, 12, and~0; missing 1, 2, 4, 5, 7, 8, 10, 11, 13, and~14.
-  \end{itemize}
-  \end{example} 
+    \end{itemize}
+  \end{example}
 \end{frame}
 
 \begin{frame}{Coprime or not}
@@ -277,7 +305,7 @@
     \item The \colorbox{Ucolor}{green rows} are for multiplying numbers that are coprime with 15: \set{1, 2, 4, 8, 11, 13, 14}
     \item The \colorbox{Zcolor}{yellow rows} are for multiplying numbers that are \emph{not} coprime with 15: \set{3, 5, 6, 9, 10, 12}
   \end{itemize}
-  
+
 \end{frame}
 
 \begin{frame}{Relatively prime}
@@ -299,7 +327,6 @@
     \end{itemize}
   \end{example}
 \end{frame}
-
 
 \begin{frame}[plain]{Coprime with 15}
   \begin{table}
@@ -324,36 +351,36 @@
     \end{tabular}
     \caption{Which numbers $0 < n < 15$ are coprime with 15}
   \end{table}
-  
+
 \end{frame}
 \subsection{Making a group}
 
 \begin{frame}{Green for group}
   If we remove the yellow rows (and corresponding columns) we get a group.
   \begin{table}
-  \begin{tabular}{r|rrrrrrrr}
-    $\times$
-       &  1 &  2 &  4 &  7 &  8 & 11 & 13 & 14  \\
-    \midrule
-     1 &  1 &  2 &  4 &  7 &  8 & 11 & 13 & 14 \\
-     2 &  2 &  4 &  8 & 14 &  1 &  7 & 11 & 13 \\
-     4 &  4 &  8 &  1 & 13 &  2 & 14 &  7 & 11 \\
-     7 &  7 & 14 & 13 &  4 & 11 &  2 &  1 &  8 \\
-     8 &  8 &  1 &  2 & 11 &  4 & 13 & 14 &  7 \\
-    11 & 11 &  7 & 14 &  2 & 13 &  1 &  8 &  4 \\
-    13 & 13 & 11 &  7 &  1 & 14 &  8 &  4 &  2 \\
-    14 & 14 & 13 & 11 &  8 &  7 &  4 &  2 &  1
-  \end{tabular}
-  \caption{Operation table for $\Zn{15}$}
-\end{table}
-  
+    \begin{tabular}{r|rrrrrrrr}
+      $\times$
+      &  1 &  2 &  4 &  7 &  8 & 11 & 13 & 14  \\
+      \midrule
+      1 &  1 &  2 &  4 &  7 &  8 & 11 & 13 & 14 \\
+      2 &  2 &  4 &  8 & 14 &  1 &  7 & 11 & 13 \\
+      4 &  4 &  8 &  1 & 13 &  2 & 14 &  7 & 11 \\
+      7 &  7 & 14 & 13 &  4 & 11 &  2 &  1 &  8 \\
+      8 &  8 &  1 &  2 & 11 &  4 & 13 & 14 &  7 \\
+      11 & 11 &  7 & 14 &  2 & 13 &  1 &  8 &  4 \\
+      13 & 13 & 11 &  7 &  1 & 14 &  8 &  4 &  2 \\
+      14 & 14 & 13 & 11 &  8 &  7 &  4 &  2 &  1
+    \end{tabular}
+    \caption{Operation table for $\Zn{15}$}
+  \end{table}
+
 \end{frame}
 
 \begin{frame}{The group $\Zn{15}$}
   \begin{definition}[{$\Zn{15}$}]
     The group $\Zn{15}$ is the set of elements,
-    \set{1,2,4,7,8,11,13,14}, 
-    along with the operation multiplication modulo~15. 
+    \set{1,2,4,7,8,11,13,14},
+    along with the operation multiplication modulo~15.
   \end{definition}
   \note[item]{Note that the members of the group do \emph{not} include 0, 3, 5, 6, 9, 10, and 12.}
 \end{frame}
@@ -363,7 +390,7 @@
   \begin{itemize}
     \item It is \textbf{closed}.
       $a \times b$ is also in the group.
-    \item There is an \textbf{identity element}, which in this case is 1, such that 
+    \item There is an \textbf{identity element}, which in this case is 1, such that
       $a \times 1 \equiv a$.
     \item Every element has an \textbf{inverse}:
       For every $a$ there is a member of the group that we will call `$a^{-1}$' such that $a \times a^{-1} \equiv 1$.
@@ -400,7 +427,7 @@
     \item $15 = 3 \times 5$
     \item $\tot(15) = (3 - 1)(5 - 1)$
     \item That is not a coincidence, and we will return to it.
-  \end{itemize} 
+  \end{itemize}
 \end{frame}
 
 \section{Fermat's Little Theorem}
@@ -408,53 +435,53 @@
 \begin{frame}{Little vs Last}
   \begin{itemize}
     \item Fermat's \emph{Last} Theorem is famous because he never proved it.
-    \note[item]{The key to proving Fermat's \emph{Last} Theorem in 1994 rested on an important theorem about elliptic curves over rational fields.}
+      \note[item]{The key to proving Fermat's \emph{Last} Theorem in 1994 rested on an important theorem about elliptic curves over rational fields.}
     \item Fermat never proved the “little” theorem either.
     \item Fermat's Little Theorem was extended and proved by Euler.
     \item Unlike Fermat's Last Theorem, Fermat's \emph{Little} Theorem is enormously useful.
   \end{itemize}
-  
+
 \end{frame}
 
 \begin{frame}{Fermat's Little Theorem}
   \begin{theorem}[Fermat's Little Theorem]\label{t:flt1}
     If $p$ is prime and $a$ is not a multiple of $p$ then
     \[
-        a^{p-1} \equiv 1 \pmod p
-    \] 
-\end{theorem}
+      a^{p-1} \equiv 1 \pmod p
+    \]
+  \end{theorem}
 \end{frame}
 
 \begin{frame}{FLT with $p - 1 = 6$}
   \begin{table}
     \begin{center}
-    \begin{tabular}{Lcccccc}
+      \begin{tabular}{Lcccccc}
         \toprule
         a    &  1 &  2 & 3 & 4 & 5 & 6  \\
         \midrule
         a^{7-1}
-          & 1
-          & 64
-          & 729 
-          & 4096
-          & \numprint{15625}
-          & \numprint{46656} \\
+        & 1
+        & 64
+        & 729
+        & 4096
+        & \numprint{15625}
+        & \numprint{46656} \\
         a^{7 - 1} \pmod7    &  1 &  1 & 1 & 1 & 1 & 1 \\
-        \bottomrule 
-    \end{tabular}
+        \bottomrule
+      \end{tabular}
     \end{center}
     \caption{Illustrating FTL with exponent $7-1$}\label{tab:flt:vi}
-\end{table}
+  \end{table}
 \end{frame}
 
 \begin{frame}{Multiply by $a$}
   \begin{align*}
-      a^{p-1}         &\equiv 1 \pmod p
-        && \mcomm{Theorem~\ref{t:flt1}} \\
-      a^{p-1} \cdot a  &\equiv 1 \cdot a \pmod p
-        && \mcomm{Multiply each side by $a$}\\
-      a^p   &\equiv a \pmod p
-        && \mcomm{Exponentiation rules!}
+    a^{p-1}         &\equiv 1 \pmod p
+    && \mcomm{Theorem~\ref{t:flt1}} \\
+    a^{p-1} \cdot a  &\equiv 1 \cdot a \pmod p
+    && \mcomm{Multiply each side by $a$}\\
+    a^p   &\equiv a \pmod p
+    && \mcomm{Exponentiation rules!}
   \end{align*}
 
 \end{frame}
@@ -463,48 +490,48 @@
   \begin{theorem}[Also Fermat's Little Theorem]\label{t:flt}
     If $p$ is prime and $a$ is not a multiple of $p$ then
     \[
-        a^{p} \equiv a \pmod p
-    \] 
-\end{theorem}
+      a^{p} \equiv a \pmod p
+    \]
+  \end{theorem}
 \end{frame}
 
 \begin{frame}{FLT with $p = 7$}
   \begin{table}
     \begin{center}
-    \begin{tabular}{Lcccccc}
+      \begin{tabular}{Lcccccc}
         \toprule
         a    &  1 &  2 & 3 & 4 & 5 & 6  \\
         \midrule
         a^{7}
-          & 1
-          & 128
-          & 2187
-          & \numprint{16384}
-          & \numprint{78125}
-          & \numprint{279936} \\
+        & 1
+        & 128
+        & 2187
+        & \numprint{16384}
+        & \numprint{78125}
+        & \numprint{279936} \\
         a^{7} \pmod7    &  1 &  2 & 3 & 4 & 5 & 6 \\
-        \bottomrule 
-    \end{tabular}
+        \bottomrule
+      \end{tabular}
     \end{center}
     \caption{Illustrating Fermat's Little Theorem
-      with $p = 7$}\label{tab:flt:vii}
-\end{table}
+    with $p = 7$}\label{tab:flt:vii}
+  \end{table}
 \end{frame}
 
 \begin{frame}{Historical note}
   \begin{itemize}
     \item Chinese mathematicians were long aware of this, perhaps as far back as 500 BCE\@.
-    \note[item]{There was some destruction of books (and killing of scholars)  during the Qin dynasty, but modern historians do not think it was anywhere as bad as Han dynasty reports made it out to be.}
+      \note[item]{There was some destruction of books (and killing of scholars)  during the Qin dynasty, but modern historians do not think it was anywhere as bad as Han dynasty reports made it out to be.}
     \item Fermat rediscovered it and said to have a proof in 1640.
-    \note[item]{Not publishing a proof was common.
-    It was a time of weird rivelries, a penchent for keeping discoveries secret, the fact that Fermet was an amateur who wrote things in letters to his friends, and there really wasn't a system for publishing proofs at the time.}
+      \note[item]{Not publishing a proof was common.
+      It was a time of weird rivelries, a penchent for keeping discoveries secret, the fact that Fermet was an amateur who wrote things in letters to his friends, and there really wasn't a system for publishing proofs at the time.}
     \item Leibniz proved it before 1683 in an unpublished manuscript.
-    \note[item]{There is a great deal of historical scholarship on what Leibniz knew and when.}
+      \note[item]{There is a great deal of historical scholarship on what Leibniz knew and when.}
     \item Euler published a proof in 1740.
     \item Euler proved an important generalization of FLT in the same year.
-    \note[item]{It is Euler's generalation that we go to next.}
+      \note[item]{It is Euler's generalation that we go to next.}
   \end{itemize}
-  
+
 \end{frame}
 
 \subsection{Euler's Totient Theorem}
@@ -514,18 +541,18 @@
     If $a$ and $n$ are coprime
     \[
       a^{\tot(n)} \equiv 1 \pmod n
-    \] 
+    \]
   \end{theorem}
 
 \end{frame}
 
 \begin{frame}{Multiplying Euler's Theorem}
   \begin{align*}
-      a^{\tot(n)}         &\equiv 1 \pmod n \\
-      a^{\tot(n)} \cdot a &\equiv 1 \cdot a \pmod n 
-        && \mcomm{Multiply both sides by $a$}\\
-      a^{\tot(n) + 1}     &\equiv a \pmod n
-        && \mcomm{Exponentiation tricks}
+    a^{\tot(n)}         &\equiv 1 \pmod n \\
+    a^{\tot(n)} \cdot a &\equiv 1 \cdot a \pmod n
+    && \mcomm{Multiply both sides by $a$}\\
+    a^{\tot(n) + 1}     &\equiv a \pmod n
+    && \mcomm{Exponentiation tricks}
   \end{align*}
 \end{frame}
 
@@ -534,9 +561,9 @@
     If $a$ and $n$ are coprime
     \[
       a^{\tot(n) + 1} \equiv a \pmod n
-    \] 
+    \]
   \end{theorem}
-  
+
 \end{frame}
 
 \begin{frame}{Computing $\tot(n)$}
@@ -552,40 +579,39 @@
   % \npthousandsep{,} % ugly commas to demonstrate
   \begin{table}
     \begin{center}
-    \begin{tabular}{Lccccc}
+      \begin{tabular}{Lccccc}
         \toprule
         a    &  1 &  2 & 4 & 7 & 8  \\
         \midrule
         a^{\tot(15)}
-          & 1
-          & 256
-          & \numprint{65536}
-          & \numprint{5764801}
-          & \numprint{16777216} \\
+        & 1
+        & 256
+        & \numprint{65536}
+        & \numprint{5764801}
+        & \numprint{16777216} \\
         a^{\tot(15)} \pmod{15}    &  1 &  1 & 1 & 1 & 1 \\
-        \bottomrule 
-    \end{tabular}
+        \bottomrule
+      \end{tabular}
     \end{center}
     \caption{Illustrating Euler's theorem with modulus 15.
-      $\tot(15) =8$}\label{tab:et}
-\end{table}
+    $\tot(15) =8$}\label{tab:et}
+  \end{table}
 \end{frame}
 
 \section{RSA}
 
-
 \begin{frame}{RSA public key}
   \begin{itemize}
     \item A prime public exponent, $e$, which is not unique to the user and is typically 65537.
-    \note[item]{65537 is 0b10000000000000001. That is a lot of 0s and only two 1s. This means that the square-and-multiply algorithm only has to do two multiplies (and 16 squarings).}
-    \note[item]{The square-and-multipy algorithm for exponentiation is 
-      analogous to the double-and-add algorithm we went over
+      \note[item]{65537 is 0b10000000000000001. That is a lot of 0s and only two 1s. This means that the square-and-multiply algorithm only has to do two multiplies (and 16 squarings).}
+      \note[item]{The square-and-multipy algorithm for exponentiation is
+        analogous to the double-and-add algorithm we went over
       when covering ECHD.}
-    \note[item]{Because $e$ is a public modulus,
-      we do not need to worry about side channel attacks revealing it,
+      \note[item]{Because $e$ is a public modulus,
+        we do not need to worry about side channel attacks revealing it,
       and so using square-and-multiply is fine.}
     \item A public modulus, $N$ which is unique to the user and is the product of two primes.
-    \note[item]{The standards allow for public moduli to be constructed as the products of more than two primes. There were reasonable reasons at the time, but I don't think that any system has actually made use of that flexibility.}
+      \note[item]{The standards allow for public moduli to be constructed as the products of more than two primes. There were reasonable reasons at the time, but I don't think that any system has actually made use of that flexibility.}
   \end{itemize}
 \end{frame}
 
@@ -594,7 +620,7 @@
     \item Everything that is in the public key
     \item The primes $p$ and $q$ such that $N = pq$
     \item A decryption exponent, $d$, computed from $p$, $q$ and $e$.
-    \note[item]{There are other things that are precomputed that are helpful for performing computations, we need to focus on $d$ here.}
+      \note[item]{There are other things that are precomputed that are helpful for performing computations, we need to focus on $d$ here.}
   \end{itemize}
 \end{frame}
 
@@ -604,7 +630,7 @@
     the public exponent $e$ and the factors, $p$ and $q$, of
     public modulus, $N$.
     \[
-    d = e^{-1} \bmod {\tot(N)}
+      d = e^{-1} \bmod {\tot(N)}
     \]
   \end{definition}
   \note[item]{There is an efficient algorithm for computing the modular multiplicative inverse. And there are even quicker ones when you know the
@@ -617,14 +643,14 @@
     \item If we divide $a$ by $M$ we get a remainder of 1;
     \item $a$ is one more than some multiple of $M$;
     \item There exists some integer $k$ such that $a = kM + 1$.
-  \end{enumerate} 
+  \end{enumerate}
   That last notion, $a = kM + 1$, is going to useful in what follows.
   \note[item]{Early on, I made a choice to use ‘$=$’ in all the places it should be used and also where ‘$\equiv$’ should be used.
   As I wasn't defining modular operations formally and pedantically, I thought I could get away with it. I am now paying the price, as the distinction between the two would be really useful here, but it would mean that I would have to use them correctly and consistently throughout.}
 \end{frame}
 
 \begin{frame}{This will be useful later}
-A useful fact follows from how we defined $d$:
+  A useful fact follows from how we defined $d$:
   \begin{equation}\label{eq:ed}
     \begin{split}
       ed &\equiv 1 \pmod{\tot(N)} \\
@@ -641,25 +667,25 @@ A useful fact follows from how we defined $d$:
 \end{frame}
 
 \begin{frame}{Why does that work?}
-    \begin{align*}
-      c^d &\equiv {\left(m^e\right)}^d
-            &&\mcomm{From $c \equiv m^e$} \\
-          &\equiv m^{ed} 
-              &&\mcomm{From how exponents work} \\
-          &\equiv m^{k\tot(N) + 1}
-              &&\mcomm{From Eq.~\ref{eq:ed} “a useful fact”}
-              \tageq\label{eq:pre-miracle} \\
-          &\equiv m 
-              &&\mcomm{A miracle occurs}
-    \end{align*}
-    \note[item]{The miracle involves Euler's Theorem.}
+  \begin{align*}
+    c^d &\equiv {\left(m^e\right)}^d
+    &&\mcomm{From $c \equiv m^e$} \\
+    &\equiv m^{ed}
+    &&\mcomm{From how exponents work} \\
+    &\equiv m^{k\tot(N) + 1}
+    &&\mcomm{From Eq.~\ref{eq:ed} “a useful fact”}
+    \tageq\label{eq:pre-miracle} \\
+    &\equiv m
+    &&\mcomm{A miracle occurs}
+  \end{align*}
+  \note[item]{The miracle involves Euler's Theorem.}
 \end{frame}
 
 \begin{frame}
   \begin{figure}
     \includegraphics[width=0.5\textwidth]{Then-a-Miracle-Occurs-Copyrighted-artwork-by-Sydney-Harris-Inc-All-materials-used-with_W640.jpg}
     \caption[“Then a miracle happens”]
-      {“Then a miracle occurs” Comic by Sidney Harris. Used by permission of \href{http://www.sciencecartoonsplus.com/pages/bio.php}{ScienceCartons}}
+    {“Then a miracle occurs” Comic by Sidney Harris. Used by permission of \href{http://www.sciencecartoonsplus.com/pages/bio.php}{ScienceCartons}}
   \end{figure}
   \note[item]{Time for me to go into Certify to get reimbursed for the licensing.}
 \end{frame}
@@ -670,17 +696,17 @@ A useful fact follows from how we defined $d$:
 
   \begin{align*}
     c^d &\equiv m^{k\tot(N) + 1}
-          && \mcomm{Our pre-miracle equation (\ref{eq:pre-miracle})}\\
-        &\equiv m^{k\tot(N)} \cdot m^1
-          && \mcomm{From how exponents work} \\
-        &\equiv \left({m^{\tot(N)}}\right)^k \cdot m^1
-          && \mcomm{Also from how exponents work} \\
-        &\equiv 1^k \cdot  m^1
-          && \mcomm{From Euler's Theorem} \\
-        &\equiv 1\cdot m 
-          && \mcomm{From how 1 works} \\
-        &\equiv m
-          && \mcomm{Also from how 1 works} 
+    && \mcomm{Our pre-miracle equation (\ref{eq:pre-miracle})}\\
+    &\equiv m^{k\tot(N)} \cdot m^1
+    && \mcomm{From how exponents work} \\
+    &\equiv \left({m^{\tot(N)}}\right)^k \cdot m^1
+    && \mcomm{Also from how exponents work} \\
+    &\equiv 1^k \cdot  m^1
+    && \mcomm{From Euler's Theorem} \\
+    &\equiv 1\cdot m
+    && \mcomm{From how 1 works} \\
+    &\equiv m
+    && \mcomm{Also from how 1 works}
   \end{align*}
 
   \note[item]{I hope that you all see why I did Diffie-Hellman first. It gave everyone practice with modular exponentiation in smaller bites.}
@@ -693,47 +719,47 @@ A useful fact follows from how we defined $d$:
 \begin{frame}{Key recovery is as hard as factoring}
   \begin{enumerate}
     \item There is a polynomial time algorithm for computing $d$ from the factors of $N$.
-    \note[item]{It is simply how we computed $d$ in the first place.}
+      \note[item]{It is simply how we computed $d$ in the first place.}
 
     \item\label{en:kr:f2d} Therefore key recovery is not harder than factoring.
-    \note[item]{Another way to say $X$ is not harder than $Y$ is to say $Y$ is at least as hard as $X$. So factoring is at least as hard as key recovery.}
-    
+      \note[item]{Another way to say $X$ is not harder than $Y$ is to say $Y$ is at least as hard as $X$. So factoring is at least as hard as key recovery.}
+
     \item There is a polynomial time algorithm for computing the factors of $N$ from $d$.
-    \note[item]{Computing the factors of $N$ from $d$ and $e$ involves a messy algorithm. It would be tedious to describe and show why it works. But it exists and is \spoly[N].}
+      \note[item]{Computing the factors of $N$ from $d$ and $e$ involves a messy algorithm. It would be tedious to describe and show why it works. But it exists and is \spoly[N].}
 
     \item\label{en:kr:d2f} Therefore factoring is not harder than key recovery.
-    
+
     \item From \ref{en:kr:f2d}~and~\ref{en:kr:d2f} we know that RSA key recovery and factoring are equally hard.
   \end{enumerate}
-  
+
 \end{frame}
 
 \begin{frame}{Does this mean that breaking RSA is as hard as factoring?}
   \begin{description}
     \item[Q:] Does this mean that breaking RSA is as hard as factoring?
-    \item[A:] No! Key recovery is not the only way to break a cipher scheme. 
-  \end{description} 
+    \item[A:] No! Key recovery is not the only way to break a cipher scheme.
+  \end{description}
 \end{frame}
 
 \subsection{Security notions}
 
 \begin{frame}{Notions again}
   \note[item]{We went through notions and \indcpa\ more than half a year ago,
-    so this is a brief recap.}
+  so this is a brief recap.}
   \begin{itemize}
     \item We don't know all the ways to attack an encryption scheme.
-    
+
     \item We can only list the ways we know of to attack an encryption scheme.
-    \note[item]{It is very important to demostrate that a scheme is secure against such attacks.}
+      \note[item]{It is very important to demostrate that a scheme is secure against such attacks.}
 
     \item But we can define what it means for a scheme to be broken irrespective of how it is broken.
 
     \item An encryption scheme is broken if having the ciphertext reveals new information about the content of the plaintext.
-    \note[item]{“New information” is defined in a way that makes traffic analysis somebody else's problem.}
-    
+      \note[item]{“New information” is defined in a way that makes traffic analysis somebody else's problem.}
+
     \item In practice these definitions are in terms of adversaries playing well-defined games against the scheme.
-    \note[item]{The proof that the \indcpa\ game definition and the “ciphertext provides no new information” definitions are the same is left as an excercie to the reader.}
-    \note[item]{Or you could take my word for it that there is such a proof.}
+      \note[item]{The proof that the \indcpa\ game definition and the “ciphertext provides no new information” definitions are the same is left as an excercie to the reader.}
+      \note[item]{Or you could take my word for it that there is such a proof.}
   \end{itemize}
 \end{frame}
 
@@ -753,7 +779,7 @@ A useful fact follows from how we defined $d$:
 \begin{frame}{RSA Assumption}
   \begin{definition}[RSA Assumption]
     No polynomial time algorithm can win the \indcpa\ RSA game (meaningfully) better than half the time.
-  \end{definition} 
+  \end{definition}
 \end{frame}
 
 \begin{frame}{Proving in the right direction}
@@ -768,14 +794,14 @@ A useful fact follows from how we defined $d$:
     \item[Q:] Is breaking RSA as hard as factoring?
     \item[A1:] For “textbook RSA” described so far, the answer is no.
     \item[A2:] For non-deterministic RSA the answer is that it is complicated.
-    \note[item]{The answer is probably “no” for small public exponent $e$. For suffiently large $e$ the answer is “we hope so.”} 
+      \note[item]{The answer is probably “no” for small public exponent $e$. For suffiently large $e$ the answer is “we hope so.”}
   \end{description}
 \end{frame}
 
 \subsection{Non-deterministic encryption}
 
 \begin{frame}{Encryption must be randomized}
-  As described so far, \adv\ can win the \indcpa\ game 100\% of the time. \adv\ can simply encrypt $m_0$ and $m_1$ with the public key to generate $c_0$ and $c_1$, one of which will be equal to the challenge ciphertext $c_b$. 
+  As described so far, \adv\ can win the \indcpa\ game 100\% of the time. \adv\ can simply encrypt $m_0$ and $m_1$ with the public key to generate $c_0$ and $c_1$, one of which will be equal to the challenge ciphertext $c_b$.
 \end{frame}
 
 \begin{frame}{OAEP}
@@ -792,27 +818,27 @@ A useful fact follows from how we defined $d$:
     \item In addition to OAEP, there is another RSA padding scheme, PKCS1.
     \item PKCS1 does almost everything right, but OAEP is superior in every respect.
     \item Many cryptographic libraries offer both PKCS1 and OAEP modes.
-    \note[item]{crypto libraries really should do more to discourage PKCS1. One way would be to make it unavailable when creating new messages.}
+      \note[item]{crypto libraries really should do more to discourage PKCS1. One way would be to make it unavailable when creating new messages.}
     \item Do not use PKCS1 unless you have to.
     \item If you must use PKCS1, be aware that you can sometimes get a “successful” decryption of mangled data.
   \end{itemize}
-  
+
 \end{frame}
 \subsection{What we know about RSA}
 
 \begin{frame}{Factoring assumption}
   \begin{definition}[Factoring assumption]
-    There is no $\spoly[x]$ algorithm which can factor an appropriately chosen $x$. 
+    There is no $\spoly[x]$ algorithm which can factor an appropriately chosen $x$.
   \end{definition}
 \end{frame}
 
 \begin{frame}{What a proof would look like}
-    \begin{enumerate}
-      \item Imagine that a polynomial time algorithm, \adv, has access to an oracle that has broken RSA encryption.
+  \begin{enumerate}
+    \item Imagine that a polynomial time algorithm, \adv, has access to an oracle that has broken RSA encryption.
       \note[item]{Anyone else thinking of Anselm of Cambridge's ontological argument? Well what we are doing here really is solid and works.}
-      \item We don't have any knowledge of the internal workings of the oracle, but we can feed it ciphertexts and get out plaintexts.
-      \item Can \adv\ use its freedom to get decryptions from the oracle to factor the public key?
-      \item If yes, then the RSA problem is at least as hard as factoring.
+    \item We don't have any knowledge of the internal workings of the oracle, but we can feed it ciphertexts and get out plaintexts.
+    \item Can \adv\ use its freedom to get decryptions from the oracle to factor the public key?
+    \item If yes, then the RSA problem is at least as hard as factoring.
   \end{enumerate}
   So far no such proof exists.
   \note[item]{It is unlikely that such a proof exists for the RSA assumption as it stands. There are special cases, such as for certain values of $e$, where a polynomial algorithm does exist. So the RSA assumption will need refining.}
@@ -822,14 +848,14 @@ A useful fact follows from how we defined $d$:
 
 \section{Algorithms}
 \newcommand*{\mintlines}[2]{%
-    \vspace*{\fill}
-    \inputminted[firstline=#1,lastline=#2]%
-    {python}{code-snippet-checks.py}}
+  \vspace*{\fill}
+  \inputminted[firstline=#1,lastline=#2]%
+{python}{code-snippet-checks.py}}
 
 \begin{frame}[containsverbatim]{Greatest Common Divisor}
   \begin{figure}
     \mintlines{20}{23}
-  \caption{Euclid's Algorithm for greatest common divisor}
+    \caption{Euclid's Algorithm for greatest common divisor}
   \end{figure}
   \note[item]{The document from the Cat in the Middle session provides a lot of detail about why this works and varient forms of it.}
 \end{frame}
@@ -838,7 +864,7 @@ A useful fact follows from how we defined $d$:
   \begin{figure}
     \mintlines{40}{46}
     \caption[Extended Euclidean Algorithm]{Extended Euclidian Algorithm (EEA):
-          Returns $g$, $x$, and $y$ such that $ax + by = g = \gcd(a,b)$}
+    Returns $g$, $x$, and $y$ such that $ax + by = g = \gcd(a,b)$}
   \end{figure}
   \note[item]{It is specularly tedious to work through why the EEA works or even what it is doing.
   The very rough idea is that it is keeping a running record of intermediate quotiants for current and previous run throughs, so that it can do a little bit of backtracking at the end.}
@@ -847,8 +873,8 @@ A useful fact follows from how we defined $d$:
 \begin{frame}[containsverbatim]{Modular inverse}
   \begin{figure}
     \mintlines{61}{65}
-  \caption[Modular inverse using EEA]{General case for computing modular inverse using the Extended Euclidean Algorithm.
-  Returns \texttt{None} if modular inverse doesn't exist.}
+    \caption[Modular inverse using EEA]{General case for computing modular inverse using the Extended Euclidean Algorithm.
+    Returns \texttt{None} if modular inverse doesn't exist.}
   \end{figure}
 \end{frame}
 
@@ -862,19 +888,19 @@ A useful fact follows from how we defined $d$:
     a^{\tot(m) -1} &\equiv a^{-1}  && \mcomm{Multiply by $a^{-1}$ (divide by $a$)}
   \end{align*}
   \note[item]{The intuition (at least for me) is that if $\tot(m)$ number of $a$s multiplied together take you around to 1
-  then $\tot(m) - 1$ number of  $a$s take you to the thing you could multiply by one more $a$ to get to 1.
+    then $\tot(m) - 1$ number of  $a$s take you to the thing you could multiply by one more $a$ to get to 1.
   That thing that you multiply “one more $a$ to to get 1 is the inverse of $a$.}
   \note[item]{On “how exponents work”: $a^x = aa^{x-1}$. }
-  
+
 \end{frame}
 \begin{frame}[containsverbatim]{Modular inverse with $\tot(m)$}
   \begin{figure}
     \mintlines{80}{81}
     \caption[Quick modular inverse using $\tot(m)$]{%
-        Modular inverse using $\tot(m)$.
-        Produces erroneous results (without warning)
-        if $\gcd(a,m) \neq 1$
-        or if an incorrect totient is provided.}
+      Modular inverse using $\tot(m)$.
+      Produces erroneous results (without warning)
+      if $\gcd(a,m) \neq 1$
+    or if an incorrect totient is provided.}
   \end{figure}
 \end{frame}
 
@@ -886,7 +912,7 @@ A useful fact follows from how we defined $d$:
     \item Exceedingly \href{\reporoot/public/s/citm-rsa.pdf}{extensive notes} on the Cat in the Middle computation. Those notes include explanations of some of the algorithms discussed.
     \item \href{\sourceroot/}{Sources}
   \end{itemize}
-  
+
 \end{frame}
 
 \begin{frame}[t,allowframebreaks]

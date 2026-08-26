@@ -3,7 +3,7 @@
 # redefined in other makefiles if they are not in
 # sibling directories
 
-COMMON_DIR = ../Common
+COMMON_DIR = ./Common
 LATEXMK_RC= $(COMMON_DIR)/latexmkrc
 
 
