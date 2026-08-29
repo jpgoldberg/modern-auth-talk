@@ -64,13 +64,6 @@ block = fill}
 \usepackage{minted}
 \usemintedstyle{xcode}
 
-\colorlet{Ucolor}{green!25}
-\colorlet{Zcolor}{yellow!50}
-\newcolumntype{U}{>{\columncolor{Ucolor}[1.0\tabcolsep]}r}
-\newcolumntype{Z}{>{\columncolor{Zcolor}[1.0\tabcolsep]}r}
-\newcommand{\rcu}{\rowcolor{Ucolor}}
-\newcommand{\rcz}{\rowcolor{Zcolor}}
-
 \author[J.~Goldberg]
 {Jeffrey Goldberg\texorpdfstring{\\ \texttt{jeffrey@goldmark.org}}{}}
 \title{Building Modern Authentication in the Before Time (2015)}
@@ -100,6 +93,8 @@ block = fill}
 
 \end{frame}
 
+\section{Overview}
+
 \begin{frame}{1Password in 2015}
   \begin{itemize}
     \item A successful password manager from home users.
@@ -118,6 +113,35 @@ block = fill}
   \end{itemize}
 \end{frame}
 
+\section{Password managers are not based on authentication}
+
+\begin{frame}{Authentication password}
+
+Authentication involves Penelope, a Prover,
+and Victor, a Verifier.
+\begin{itemize}
+  \item P knows 
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Passwords for all reasons}
+\begin{table}
+  \begin{tabular}{lP{0.25\textwidth}P{0.25\textwidth}P{0.25\textwidth}}
+        & Meatspace
+        & Authentication
+        & Decryption \\
+    \midrule
+    Password
+      & Something you know that is said to a to prove you are authorized to enter
+      & Secret told to system to prove you are authorized to do stuff
+      & Converted to a key necessary to transform data.
+    
+  \end{tabular}
+\end{table}
+\end{frame}
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \end{document}
@@ -128,7 +152,6 @@ block = fill}
 \begin{frame}{Resources}
   \begin{itemize}
     \item \href{\reporoot/public/s/rsa.pdf}{These slides}
-    \item Exceedingly \href{\reporoot/public/s/citm-rsa.pdf}{extensive notes} on the Cat in the Middle computation. Those notes include explanations of some of the algorithms discussed.
     \item \href{\sourceroot/}{Sources}
   \end{itemize}
 
