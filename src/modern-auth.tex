@@ -20,30 +20,20 @@
 \setdefaultlanguage{english}
 
 \usepackage{xltxtra}
-\usepackage[backend=biber,style=alphabetic,
-doi=true, url=true, isbn=false]{biblatex}
 
-% When Jeffrey Goldberg builds this, he can use his bibliography database
-% But he should include in the repository a .bib file that contains what
-% is needed for these slides.
-% He can do that by first generating the .bcf using his resources, but then
-% using
-%  biber --output_format=bibtex --output_resolve modern-auth.bcf
-%  rm modern-auth.bcf
-% to create a modern-auth_biber.bib file to be included.
-%
-\IfFileExists{./modern-auth_biber.bib}{%
-  \addbibresource{modern-auth_biber.bib}
-}{%
-  \addbibresource{crypto.bib}
-  \addbibresource{statistics.bib}
-}
+%\usepackage{enumitem}
+\newcommand{\propdescription}[1]{\textit{#1}\hspace*{\fill}\linebreak }
+\newcommand{\prop}[1]{\textsf{#1}}
 
-\renewcommand*{\bibfont}{\tiny}
+%\newlist{desiderata}{description}{1}
+%\setlist[desiderata]{labelwidth=3em,
+%  align=right,
+%  format={\normalfont\prop },
+%  labelsep=1em,
+%  listparindent=0pt,
+%  leftmargin=4em}
 
-% Beamer (metropolis) style setup
-%\usepackage{FiraSans}
-%\usefonttheme{professionalfonts}
+
 \usetheme{moloch}
 \definecolor{BitsBlue2}{HTML/hsb}{0A56BF/0.597,0.95,0.75} % guess % H=215
 \molochset{titleformat = smallcaps,
@@ -71,7 +61,6 @@ block = fill}
 \date{September 1, 2026\\
 \footnotesize Last revised: \today }
 % \institute{Not yet institutionalized}
-
 
 \hypersetup{colorlinks=true, allcolors=black, urlcolor=magenta}
 \providecommand*{\reporoot}{https://github.com/jpgoldberg/modern-auth-talk}
@@ -105,47 +94,258 @@ block = fill}
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Limations}
+\begin{frame}{Why run a service?}
+  We were increasingly hit by a number of problems, including:
   \begin{itemize}
-    \item Maintaining sync mechanisms with different third party services getting harder.
-    \item Sync systems that worked didn't have all the security requirements we wanted.
-    \item Users could share subsets of their data with other members of families or teams.
+    \item Maintaining sync mechanisms with different third party services was getting harder;
+    \item Third party sync services didn't have all security requirements we wanted;
+    \item Users could not reliably share subsets of their data with other members of families or teams.
+  \end{itemize}
+  Running our own service would require, among other things, building an authentication system for it.
+\end{frame}
+
+\section{Review}
+
+\begin{frame}
+  \frametitle{Background concepts}
+
+  For what follows, we need a high level understanding of some of the differences between authentication and encryption as well as to how password cracking (whether for encryption or authentication) is possible.
+\end{frame}
+
+\subsection{Password managers are not based on authentication}
+
+\begin{frame}{Penelope and Victor}
+
+  Authentication involves a prover, $P$, and a verifier, $V$.
+  $V$ has the power to grant $P$ access to some resource.
+
+  \note[item]{I'm combining authorization and authentication}
+
+  \begin{itemize}
+    \item $P$ has access to a secret, $s$.
+    \item $P$ proves to $V$ that she knows $s$, typically sending him $s$.
+    \item $V$ verifies that $s$ is the correct secret for $P$
+    \item If the check passes, $V$ grants $P$ access.
   \end{itemize}
 \end{frame}
 
-\section{Password managers are not based on authentication}
+\begin{frame}{Spoils to the Victor}
+  \begin{itemize}
+    \item $V$ has the capacity to gran access even if a good proof is not provided.
+    \item $V$ may not be the only entity with the capacity to grant access.
+  \end{itemize}
+\end{frame}
 
-\begin{frame}{Authentication password}
+\begin{frame}{Decryption is transformative}
+  \begin{itemize}
+    \item Alice has a small secret, $s$, perhaps it is a password.
+      \note[item]{$s$ is typically derived from a password.}
+    \item Alice has two non-secret mathematical functions $E$ and $D$.
+    \item $c = E(k, m)$, $m = D(k, c)$, and for all $m$ and $k$: $D(k, E(k, m)) = m$
+  \end{itemize}
+\end{frame}
 
-Authentication involves Penelope, a Prover,
-and Victor, a Verifier.
-\begin{itemize}
-  \item P knows 
-\end{itemize}
+\begin{frame}<beamer:0>{Decryption requiers the secret}
+  \begin{itemize}
+    \item The function $D$ is not capable of producing $m$ from $c$ without $k$.
+    \item There is no other function that is feasibly capable of producing $m$ from $c$
+      \note[item]{Well, I should speciffy that these functions also don't have access to $m$.}
+  \end{itemize}
+
 \end{frame}
 
 \begin{frame}{Passwords for all reasons}
-\begin{table}
-  \begin{tabular}{lP{0.25\textwidth}P{0.25\textwidth}P{0.25\textwidth}}
-        & Meatspace
-        & Authentication
-        & Decryption \\
-    \midrule
-    Password
+  \begin{table}
+    \begin{tabular}{lP{0.25\textwidth}P{0.25\textwidth}P{0.25\textwidth}}
+      & Meatspace
+      & Authentication
+      & Decryption \\
+      \midrule
+      Password
       & Something you know that is said to a to prove you are authorized to enter
       & Secret told to system to prove you are authorized to do stuff
       & Converted to a key necessary to transform data.
-    
-  \end{tabular}
-\end{table}
+
+    \end{tabular}
+  \end{table}
 \end{frame}
 
+\subsection{Cracking}
+\begin{frame}
+  \frametitle{Cracking authentication}
+  Verifiers store something, typically a hash of the password,
+  which if captured by an attacker can be used to for password cracking
+\end{frame}
 
+\begin{frame}
+  \frametitle{Cracking (decryption)}
 
+  Decryption keys are typically derived from password using a key derivation function (KDF) which will including hashing.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Can hashes be reversed?}
+
+  Cryptographic hash functions are (hopefully) pre-image resistant, meaning
+  that given $h$ and a hash function $H$ it is effectively impossible to compute
+  the $m$ of $h=H(m)$\uncover<1>{.}\uncover<2>{\alert{if $m$ is chosen uniformly from a large space.}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Human created passwords are crackable}
+  \note[item]{This, of course, is why password managers are necessary,
+  but we will be taking amount the password needed to unlock the password manager.}
+  \begin{itemize}
+    \item Humans can't create high entropy passwords;
+      \note[item]{My lame claim to fame is having written a
+        \href{https://1password.com/blog/toward-better-master-passwords}{2011 blog post}
+        (since revised) that inspired the
+      \href{https://xkcd.com/936/}{XKCD “correct horse battery staple” comic.}}
+    \item Humans can't remember more than a few medium entropy passwords.
+      \note[item]{Joseph Bonneau and Stuart Schechter were able to train people on 56-bit passwords, but it required learning the password incrementally. See \url{https://www.usenix.org/conference/usenixsecurity14/technical-sessions/presentation/bonneau
+      }}
+  \end{itemize}
+  \begin{figure}
+    \includegraphics[width=\textwidth]{im_so_random.png}
+    \caption{“I'm So Random”: \href{https://xkcd.com/1210}{xkcd 1210}}
+  \end{figure}
+
+\end{frame}
+
+\section{Specific authentication concerns}
+
+\begin{frame}
+  \frametitle{Specific concerns}
+  \begin{itemize}
+    \item Server must not receive decryption secrets during authentication;
+      \note[item]{Every password manager with an authentication process must address this problem.}
+    \item Remain secure even if TLS fails;
+      \note[item]{TLS was in bad shape at the time. It has dramatically improved since then.}
+    \item Service does not hold onto anything that is crackable.
+      \note[item]{The crackability problem is not really about authentication, though it does interact with it. And it would be a separate talk on its own. See \href{https://1password.com/blog/what-the-secret-key-does}{“Secret Key: What is it, and how does it protect you?”} for disucssion of that.}
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Don't receive decryption secret}
+  In a traditional authentication mechanism, the user password is transmitted
+  to the server, the verifier hashes it, discards the password, and compares the hash to stored hash. Relying on the verification process to discard the secret it receives does not meet the security requirements for a password
+  manager.
+
+  Possible solutions
+  \begin{enumerate}
+    \item Separate password for authentication and decryption
+      \note[item]{Separate authentication password is a touch sell for a product named 1Password.}
+    \item Pre-hashing password before transmitting
+      \note[item]{Prehashing alone may make things harder for a malicious server to recover decryption password, but we'd like to do better.}
+    \item Password-authenticated key exchange (PAKE)
+      \note[item]{The bulk of this talk is about implementing a PAKE in 2015.
+      A PAKE also remains secure if TLS fails.}
+  \end{enumerate}
+\end{frame}
+
+\section{General authentication desiderata}
+
+\begin{frame}
+  \frametitle{Mutual authentication}
+  We not only want the client to prove its identity to the server, but we also
+  want the server to prove its identity to the client.
+
+  \begin{description}
+    \item[CI] \propdescription{Proof of client identity}
+    \item[SI] \propdescription{Proof of server identity}
+      This is typically handled by TLS, but we wanted the system to retain its security properties if even if TLS fails. Confidence in TLS has (correctly) improved since 2015.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{No secrets transmitted, no replay, no tampering}
+  \begin{description}
+    \item[NS] \propdescription{No secrets received}
+      Traditional password authentication emphatically fails to meet this.
+    \item[NR] \propdescription{No replay}
+      An eavesdropper can't learn anything that would allow them to successfully replay an authentication session;
+    \item[NT] \propdescription{No tampering}
+      An active attacker who can tamper with the communication can only prevent successful authentication but cannot learn any secrets.
+  \end{description}
+  \note[item]{Previously I erronousely refered to NS as “Zero knowledge”. That misuse of the term seems to have caught on. Sorry.}
+
+  I will refer to the set of these as “NS+”.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Key Exchange}
+  \begin{description}
+    \item[KE] \propdescription{Key exchange}
+    The authentication process results in both sides knowing an encryption key for the session. Proper use of that session key for all communication during the session provides a strong proof that each message comes from a party that successfully went through the authentication process.
+    \note[item]{Proper use means that each message is authenticated (through AEAD or a MAC with a key derived from the session key.)}
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Only the above}
+  There are more slides in this section talking about other desirable properties of an authentication system, but now we will skip ahead to 
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of long term secret}
+  \begin{description}
+    \item[BigH] \propdescription{High entropy}
+        TOTP is an example of this.
+    \item[Uniq] \propdescription{Unique long term secrets}
+        If an attacker obtains the a client secret used for one service,
+        it gives them no information about any other authentication secret.
+        Password reuse fails at this.
+    \item[NoCrk] \propdescription{Uncrackable server verifiers}
+        Protects users if server gets breached. Reduces incentives to breach the service.
+  \end{description}
+\end{frame}
+
+\begin{frame}{Usable}
+  \begin{description}
+    \item[Use] \propdescription{Reliably and securely usable}
+      People need to be able to use the system, and the system should be designed to make it easy for people to do things in their own privacy and security interests while hard to do things that go against those interests.
+    \note[item]{This is much harder than one might imagine. For example, most users are not going to distinguish between a password used for authentication versus one for decryption, yet the semantics of a password change for can be catestrophically different.}
+  \end{description}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Undesirable desiderata}
+  \note[item]{Oxymoronic slide title.}
+  There are features that may be desirable for systems
+  that may need to avoided or created with strong restrictions
+  for a password manager.
+  \begin{description}
+    \item[Reset] \propdescription{Recoverability}
+    Any entity that has the power to reset a forgotten or lost authentication secret has the capability to to take over the account.
+    \note[item]{1Password's recovery mechanism is nightmarishly complicated,
+    and would be a topic for another day.}
+    \item[Alt] \propdescription{Alternative authentication}
+      Sometimes what is labeled as two-factor authentication is better described as alternative factor authentication.
+      This is extremely dangerous if users are led to believe that it
+      helps keep attackers out.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+\frametitle{Distinct factors}
+\begin{description}
+  \item[MF] \propdescription{Multiple factor} 
+     If at least one of multiple authentication factors is not compromised, the authentication process retains its security properties.
+     \note[item]{This is widely and often dangerously misunderstood. And is a separate topic.}
+\end{description}
+\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \end{document}
 
+\section{Password-Authenticated Key Exchange (PAKE)}
+
+\begin{frame}
+  \frametitle{Password a}
+\end{frame}
 
 \section{Resources}
 
@@ -155,11 +355,6 @@ and Victor, a Verifier.
     \item \href{\sourceroot/}{Sources}
   \end{itemize}
 
-\end{frame}
-
-\begin{frame}[t,allowframebreaks]
-  \frametitle{References}
-  \printbibliography[heading=none]
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
