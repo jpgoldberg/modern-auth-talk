@@ -33,7 +33,6 @@
 %  listparindent=0pt,
 %  leftmargin=4em}
 
-
 \usetheme{moloch}
 \definecolor{BitsBlue2}{HTML/hsb}{0A56BF/0.597,0.95,0.75} % guess % H=215
 \molochset{titleformat = smallcaps,
@@ -278,8 +277,8 @@ block = fill}
   \frametitle{Key Exchange}
   \begin{description}
     \item[KE] \propdescription{Key exchange}
-    The authentication process results in both sides knowing an encryption key for the session. Proper use of that session key for all communication during the session provides a strong proof that each message comes from a party that successfully went through the authentication process.
-    \note[item]{Proper use means that each message is authenticated (through AEAD or a MAC with a key derived from the session key.)}
+      The authentication process results in both sides knowing an encryption key for the session. Proper use of that session key for all communication during the session provides a strong proof that each message comes from a party that successfully went through the authentication process.
+      \note[item]{Proper use means that each message is authenticated (through AEAD or a MAC with a key derived from the session key.)}
   \end{description}
 \end{frame}
 
@@ -294,13 +293,13 @@ block = fill}
   \frametitle{Properties of long term secret}
   \begin{description}
     \item[BigH] \propdescription{High entropy}
-        TOTP is an example of this.
+      TOTP is an example of this.
     \item[Uniq] \propdescription{Unique long term secrets}
-        If an attacker obtains the a client secret used for one service,
-        it gives them no information about any other authentication secret.
-        Password reuse fails at this.
+      If an attacker obtains the a client secret used for one service,
+      it gives them no information about any other authentication secret.
+      Password reuse fails at this.
     \item[NoCrk] \propdescription{Uncrackable server verifiers}
-        Protects users if server gets breached. Reduces incentives to breach the service.
+      Protects users if server gets breached. Reduces incentives to breach the service.
   \end{description}
 \end{frame}
 
@@ -308,9 +307,9 @@ block = fill}
   \begin{description}
     \item[Use] \propdescription{Reliably and securely usable}
       People need to be able to use the system, and the system should be designed to make it easy for people to do things in their own privacy and security interests while hard to do things that go against those interests.
-    \note[item]{This is much harder than one might imagine. For example, most users are not going to distinguish between a password used for authentication versus one for decryption, yet the semantics of a password change for can be catestrophically different.}
+      \note[item]{This is much harder than one might imagine. For example, most users are not going to distinguish between a password used for authentication versus one for decryption, yet the semantics of a password change for can be catestrophically different.}
   \end{description}
-  
+
 \end{frame}
 
 \begin{frame}
@@ -321,9 +320,9 @@ block = fill}
   for a password manager.
   \begin{description}
     \item[Reset] \propdescription{Recoverability}
-    Any entity that has the power to reset a forgotten or lost authentication secret has the capability to to take over the account.
-    \note[item]{1Password's recovery mechanism is nightmarishly complicated,
-    and would be a topic for another day.}
+      Any entity that has the power to reset a forgotten or lost authentication secret has the capability to to take over the account.
+      \note[item]{1Password's recovery mechanism is nightmarishly complicated,
+      and would be a topic for another day.}
     \item[Alt] \propdescription{Alternative authentication}
       Sometimes what is labeled as two-factor authentication is better described as alternative factor authentication.
       This is extremely dangerous if users are led to believe that it
@@ -332,22 +331,140 @@ block = fill}
 \end{frame}
 
 \begin{frame}
-\frametitle{Distinct factors}
-\begin{description}
-  \item[MF] \propdescription{Multiple factor} 
-     If at least one of multiple authentication factors is not compromised, the authentication process retains its security properties.
-     \note[item]{This is widely and often dangerously misunderstood. And is a separate topic.}
-\end{description}
+  \frametitle{Distinct factors}
+  \begin{description}
+    \item[MF] \propdescription{Multiple factor}
+      If at least one of multiple authentication factors is not compromised, the authentication process retains its security properties.
+      \note[item]{This is widely and often dangerously misunderstood. And is a separate topic.}
+  \end{description}
 \end{frame}
-
 
 \section{Password-Authenticated Key Exchange (PAKE)}\label{sec:pake}
 \begin{frame}
-  \frametitle{Password a}
+  \frametitle{What a PAKE does}
   \label{frame:pake}
-
-  content will go here
+  A well designed password authenticated key exchange (PAKE) protocol gives us
+  the following security authentication security properties
+  \begin{description}
+    \item[CI] Proof of client identity
+    \item[SI] Proof of server identity
+    \item[NS] No secrets received
+    \item[NR] No replay
+    \item[NT] No tampering
+    \item[KE] Key exchange
+  \end{description}
 \end{frame}
+
+\begin{frame}
+  \frametitle{Enrollment}
+  \begin{enumerate}
+    \item Generate long term client secret, $x$, from password, salt ($s$), etc
+      \note[item]{For the PAKE we ended up using the long term client secret is called $x$, so we are stuck with that.}
+    \item Compute a mathematically related verifier, $v$.
+      \note[item]{I am describing an augmented PAKE, in which it is infeasible to compute $x$ from $v$.}
+    \item Send $v$ and $s$ to service.
+      \note[item]{Sending $v$ to the service is the only time a secret is transmitted}.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Authentication: Compute shared $K$}
+  \begin{enumerate}
+    \item Client generates an ephemeral client secret, $a$.
+    \item Client generates an ephemeral public key, $A$, from $x$ and $a$.
+    \item Client sends $A$ (along with identity, $I$) to server.
+      \note[item]{Identity is something like username.}
+    \item Server generates an ephemeral server secret, $b$.
+    \item Server generates an ephemeral public key, $B$, from $v$ and $b$.
+    \item Server sends $B$ to client.
+    \item Client computes $K_c$ from $x$, $a$, and $B$.
+    \item Server computes $K_a$ from $v$, $b$, and $A$.
+  \end{enumerate}
+  If $x$ and $v$ have the right mathematical relation, then $K_s = K_c$.
+
+  \note[item]{The computations, sequence of computaton, nature of public parameters used, and even the number of messages back and forth depend on the particular PAKE.}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Authentication: Check shared $K$}
+  $K_s = K_c$ only if $x$ and $v$ have the right mathematical relation.
+
+  \begin{block}{Notation}
+    \begin{small}
+      \begin{itemize}
+        \item “$\xor$” is exclusive or; “$|$” is reversible concatenation;
+        \item $H$, an agreed upon cryptographic hash function;
+        \item $g$, a public parameter used computations;
+        \item $s$, the salt, shared during enrollment;
+        \item $I$, the client's identify, set during enrollment;
+        \item $K_c$ and $K_s$, keys that the client (C) and server (S) have computed.
+      \end{itemize}
+    \end{small}
+  \end{block}
+  \begin{enumerate}
+    \item C sends  $M_1 = H(H(N) \xor H(g)\| H(I) | s | A | B | K_c)$ to S.
+    \item S verifies $M_1$.
+    \item S sends $M_2 = H(A | M_1 | K_s)$ to C.
+    \item C verifies $M_2$.
+  \end{enumerate}
+  \note[item]{Details don't matter (and there are different ways to do this.) What matters is that there is a way for the client and the server to each prove to each other that they have the same $K$ without revealing any secrets.}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Choosing a PAKE: Criteria}
+  \begin{itemize}
+    \item Existing libraries we could use;
+    \item Augmented PAKE ($x \neq v$)
+      \note[item]{The reason for seeking an augmented PAKE is so capture of the server stored verifier $v$ could not lead to impersonation of a client.}
+    \item Clear of any patents.
+      \note[item]{At the time were were some contestable patents on categories of PAKEs, and I lived in the Eastern Federal Distict of Texas.}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Existing libraries: Nothing for all our platforms}
+  Our clients included things written in Objective-C (Mac and iOS), Delphi (Windows), Java (Android), and our planned web-clients that needed to run in Safari, Edge, Firefox, and Chrome.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Existing libraries: Linking}
+
+  \begin{block}{In principle}
+    In principle a single portable library written in C could be linked to our native clients.
+  \end{block}
+
+  \begin{block}{In practice}
+    Our experience doing that with OpenSSL had been unpleasant
+    More importantly, this wasn't going to work with web-clients.
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Web-clients}
+
+  \begin{block}{In principle}
+    In principle web-clients should not have been a thing, not only did they severely limit what sorts of cryptographic libraries we could use, but given the way the client is delivered their security did depend on TLS.
+  \end{block}
+
+  \begin{block}{In practice}
+    Web-clients were absolutely necessary, as features (particularly administrative ones) could be developed and deployed quickly to all customers. Adding new UI to native clients was much slower, and releasing
+    an updated native client was subject to additional delays, including app store processes.
+  \end{block}
+
+\end{frame}
+
+\
+
+\begin{frame}
+  \frametitle{Rolling our own}
+  \alert{Do not roll your own cryptographic implementations!}
+
+  The mathematical magic needed for the key exchange behind any PAKE depended on either integer field or elliptic curve primitives.
+
+  The libraries available to us did not expose elliptic curve primitives, but anything with a big integer library could perform the computations for integer fields.
+\end{frame}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \end{document}
