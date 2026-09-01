@@ -1,12 +1,8 @@
 % !TEX program = xelatex
 \documentclass[xcolor={dvipsnames,table,hyperref}]{beamer}
 
-% pick one. "hide notes" is default
-% \setbeameroption{hide notes}
-\setbeameroption{show notes}
-% \setbeameroption{show notes on second screen = left}
-% \setbeameroption{show only notes}
-% \setbeameroption{show only slides with notes}
+% Contains whether to build with notes, etc. Constructed with make
+\input{build}
 
 \usepackage{fontspec}
 \usepackage{fontsetup}
@@ -25,13 +21,6 @@
 \newcommand{\propdescription}[1]{\textit{#1}\hspace*{\fill}\linebreak }
 \newcommand{\prop}[1]{\textsf{#1}}
 
-%\newlist{desiderata}{description}{1}
-%\setlist[desiderata]{labelwidth=3em,
-%  align=right,
-%  format={\normalfont\prop },
-%  labelsep=1em,
-%  listparindent=0pt,
-%  leftmargin=4em}
 
 \usetheme{moloch}
 \definecolor{BitsBlue2}{HTML/hsb}{0A56BF/0.597,0.95,0.75} % guess % H=215
@@ -43,6 +32,23 @@ block = fill}
 \molochcolors{
   light/frametitle bg=BitsBlue2
 }
+
+\newenvironment{inprinciple}{%
+  \setbeamercolor{block title}{use=structure,fg=white,bg=blue!60!black}
+  \setbeamercolor{block body}{parent=normal text,use=block title,bg=blue!5}
+  \begin{block}{In principle}
+  }{%
+  \end{block}
+}
+
+\newenvironment{inpractice}{%
+  \setbeamercolor{block title}{use=structure,fg=white,bg=red!70!black}
+  \setbeamercolor{block body}{parent=normal text,use=block title,bg=red!5}
+  \begin{block}{In practice}
+  }{%
+  \end{block}
+}
+
 \usepackage{appendixnumberbeamer}
 
 \setbeamertemplate{theorems}[numbered]
@@ -235,7 +241,7 @@ block = fill}
   Possible solutions
   \begin{enumerate}
     \item Separate password for authentication and decryption
-      \note[item]{Separate authentication password is a touch sell for a product named 1Password.}
+      \note[item]{Separate authentication password is a tough sell for a product named 1Password.}
     \item Pre-hashing password before transmitting
       \note[item]{Prehashing alone may make things harder for a malicious server to recover decryption password, but we'd like to do better.}
     \item Password-authenticated key exchange (PAKE)
@@ -430,39 +436,111 @@ block = fill}
 \begin{frame}
   \frametitle{Existing libraries: Linking}
 
-  \begin{block}{In principle}
-    In principle a single portable library written in C could be linked to our native clients.
-  \end{block}
+  \begin{inprinciple}
+    A single portable library written in C could be linked to our native clients.
+  \end{inprinciple}
 
-  \begin{block}{In practice}
+  \begin{inpractice}
     Our experience doing that with OpenSSL had been unpleasant
     More importantly, this wasn't going to work with web-clients.
-  \end{block}
+  \end{inpractice}
 \end{frame}
 
 \begin{frame}
   \frametitle{Web-clients}
 
-  \begin{block}{In principle}
+  \begin{inprinciple}
     In principle web-clients should not have been a thing, not only did they severely limit what sorts of cryptographic libraries we could use, but given the way the client is delivered their security did depend on TLS.
-  \end{block}
+  \end{inprinciple}
 
-  \begin{block}{In practice}
+  \begin{inpractice}
     Web-clients were absolutely necessary, as features (particularly administrative ones) could be developed and deployed quickly to all customers. Adding new UI to native clients was much slower, and releasing
     an updated native client was subject to additional delays, including app store processes.
-  \end{block}
+  \end{inpractice}
 
 \end{frame}
 
-\
-
 \begin{frame}
-  \frametitle{Rolling our own}
+  \frametitle{Underlying group}
   \alert{Do not roll your own cryptographic implementations!}
 
-  The mathematical magic needed for the key exchange behind any PAKE depended on either integer field or elliptic curve primitives.
+  \begin{inprinciple}
+    We should use elliptic curves for the underlying group.
+  \end{inprinciple}
 
-  The libraries available to us did not expose elliptic curve primitives, but anything with a big integer library could perform the computations for integer fields.
+  \begin{inpractice}
+    The libraries available to us did not expose elliptic curve primitives, but anything with a big integer library could perform the computations for integer fields.
+  \end{inpractice}
+
+\end{frame}
+
+\begin{frame}{Timing attacks}
+
+  \begin{inprinciple}
+    We should ensure that our implementation defends against timing and other
+    side-channel attacks.
+  \end{inprinciple}
+
+  \begin{inpractice}
+    We did not have access to big integer libraries that did so, and we didn't have the highly specialized skills to do that generally.
+    We did defend against the ones that we easily could.
+  \end{inpractice}
+\end{frame}
+
+\begin{frame}{Leaks like a sieve}
+    \begin{figure}
+        \includegraphics[width=0.75\textwidth]{leeks-like-a-sieve.png}
+        \caption{Leeks like a sieve}
+    \end{figure}
+    \note[item]{tbh, neither a spatter screen nor a colander are sieves, but they are what I had at home.}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Secure Remote Password (SRP 6a)}
+
+  \begin{inprinciple}
+    Use a PAKE with cleaner and clearer security proofs and analysis than SPR-6a
+  \end{inprinciple}
+
+  \begin{inpractice}
+    SRP-6a was only viable option, given that we had to implement it ourselves and was free of any potential patent claims.
+  \end{inpractice}
+
+\end{frame}
+
+\begin{frame}{A once fresh meme}
+  Do not use SPR for any new projects today. It was a necessary choice for 1Password in 2015; there are far better PAKEs available now.
+
+  \begin{figure}
+    \includegraphics[width=0.9\textwidth]{opaque-meme.jpg}
+    \caption{Something I tweeted a year after launch}
+  \end{figure}
+
+  \note[item]{OPAQE is also passé. Consult your nearest cryptographer for current PAKE recommendations.}
+\end{frame}
+
+\section{Lessons from rolling our own}
+
+\begin{frame}
+  \frametitle{Developers need guidance}
+  Pointing even very talented developers at a standard and expecting them
+  to implement well if they don't understand why the protocol works leads to problems
+  \note[item]{I failed to provide enough guidance during development.}
+  \begin{itemize}
+    \item Without an understanding of how the pieces fit together, code can be wildly misfactored.
+      \note[item]{Poor code organization contributed to my failure to notice that an important check was not being performed. Bounty hunter found during testing that check that client ephemeral public, $A$ was not being checked for $A  \not\equiv 0 \pmod N$.}
+    \item Developers didn't know which parts of computation where cryptographic secrets.
+      \note[item]{Most anyone who has had some course in cryptography will be familiar with the convention during key exchange that little $a$ is an ephemeral client secret and big $A$ is an ephemeral public key. But most developers won't know that. Only after seeing little $a$ not properly handled did I change our variable name to \texttt{ephemeralClientSecret}.}
+    \item Allowed a seemingly harmless shortcut in not padding a number before hashing that lead to a Heisenbug years later.
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Progress}
+  In the years that followed, a common core library for all clients was developed in Rust. That was an intensive, multi-year project. 
+  
+  Additionally greater cryptographic expertise was brought on board.
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
