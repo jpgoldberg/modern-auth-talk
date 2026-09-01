@@ -15,6 +15,6 @@ The PDF slides are best viewed in single page mode with your PDF reader.
 
 There are three versions of these.
 
-- [Slides with notes](./publc/modern-auth-with-notes.pdf)
-- [Slides without notes](./publc/modern-auth-sans-notes.pdf)
-- [Note slides only](./publc/modern-notes-only.pdf))
+- [Slides with notes](https://jpgoldberg.github.io/modern-auth-talk/modern-auth-with-notes.pdf)
+- [Slides without notes](https://jpgoldberg.github.io/modern-auth-talk/modern-auth-sans-notes.pdf)
+- [Note slides only](https://jpgoldberg.github.io/modern-auth-talk/modern-notes-only.pdf))
