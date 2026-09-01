@@ -17,4 +17,4 @@ There are three versions of these.
 
 - [Slides with notes](https://jpgoldberg.github.io/modern-auth-talk/modern-auth-with-notes.pdf)
 - [Slides without notes](https://jpgoldberg.github.io/modern-auth-talk/modern-auth-sans-notes.pdf)
-- [Note slides only](https://jpgoldberg.github.io/modern-auth-talk/modern-notes-only.pdf))
+- [Note slides only](https://jpgoldberg.github.io/modern-auth-talk/modern-auth-notes-only.pdf)
