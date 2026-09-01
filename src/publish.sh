@@ -7,3 +7,6 @@ for suffix in  with-notes sans-notes notes-only ; do
     make modern-auth.pdf
     cp modern-auth.pdf ../public/modern-auth-${suffix}.pdf
 done
+
+# reset to default build
+cp build-with-notes.tex build.tex
