@@ -4,7 +4,7 @@ LATEXMK_OPTIONS = -shell-escape
 
 PUB_STATIC_DIR = ../public/
 
-IMAGES = im_so_random.png leeks-like-a-sieve.png opaque-meme.jpg
+IMAGES = im_so_random.png leeks-like-a-sieve.png opaque-meme.jpg qr10.pdf
 
 SETUP = build.tex
 
